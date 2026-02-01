@@ -5,6 +5,10 @@ import {
   CallToolRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 
+import { listComponents } from './tools/list_components.js';
+
+const PROJECT_ROOT =
+  process.argv[2] || process.env.PROJECT_ROOT || process.cwd();
 // 서버 생성
 const server = new Server(
   {
@@ -35,13 +39,13 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
 // 도구 실행 로직
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name } = request.params;
-
   if (name === 'list_components') {
+    const result = await listComponents(PROJECT_ROOT);
     return {
       content: [
         {
           type: 'text',
-          text: '컴포넌트 목록: 구현 중입니다.',
+          text: result,
         },
       ],
     };
