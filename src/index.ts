@@ -1,10 +1,60 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import {
+  ListToolsRequestSchema,
+  CallToolRequestSchema,
+} from '@modelcontextprotocol/sdk/types.js';
 
 // 서버 생성
-const server = new Server({
-  name: 'component-doc-mcp',
-  version: '1.0.0',
+const server = new Server(
+  {
+    name: 'component-doc-mcp',
+    version: '1.0.0',
+  },
+  {
+    capabilities: {
+      tools: {},
+    },
+  },
+);
+
+// 도구 목록 정의
+server.setRequestHandler(ListToolsRequestSchema, async () => ({
+  tools: [
+    {
+      name: 'list_components',
+      description: '프로젝트 내 모든 컴포넌트 목록을 가져옵니다.',
+      inputSchema: {
+        type: 'object',
+        properties: {},
+      },
+    },
+  ],
+}));
+
+// 도구 실행 로직
+server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  const { name } = request.params;
+
+  if (name === 'list_components') {
+    return {
+      content: [
+        {
+          type: 'text',
+          text: '컴포넌트 목록: 구현 중입니다.',
+        },
+      ],
+    };
+  }
+
+  return {
+    content: [
+      {
+        type: 'text',
+        text: `알 수 없는 도구: ${name}`,
+      },
+    ],
+  };
 });
 
 // 서버 시작
