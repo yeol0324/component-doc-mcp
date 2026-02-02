@@ -26,6 +26,13 @@ export async function analyzeComponent(
   const props = extractProps(componentContent);
 
   const { description, hasDescription } = extractDescription(componentContent);
+
+  const usageExample = generateUsageExample(
+    componentName,
+    componentPath,
+    props,
+  );
+
   let result = `Component "${componentName}" in "${componentPath}"\n\n`;
 
   result += 'Description:\n';
@@ -47,6 +54,10 @@ export async function analyzeComponent(
     }
   }
 
+  if (usageExample) {
+    result += `\nUsage Example:\n`;
+    result += usageExample;
+  }
   return result;
 }
 
@@ -173,4 +184,39 @@ function extractDescription(componentContent: string): {
     description: 'Component with no description',
     hasDescription: false,
   };
+}
+
+function generateUsageExample(
+  componentName: string,
+  componentPath: string,
+  props: PropInfo[],
+): string {
+  const importValue = `import { ${componentName} } from './${componentName}';`; // 컴포넌트 태그 생성
+  const componentStartTag = `<${componentName}`;
+  let propsValue = '';
+  for (const prop of props) {
+    if (prop.required) {
+      propsValue += `\n  ${getSamplePropsValue(prop)}`;
+    }
+  }
+  const componentEndTag = `></${componentName}>`;
+
+  return `\`\`\`tsx\n${importValue}\n\n${componentStartTag}${propsValue}\n${componentEndTag}\n\`\`\``;
+}
+function getSamplePropsValue(prop: PropInfo): string {
+  const type = prop.type.toLowerCase();
+
+  if (type.includes('string') || type.includes('"')) {
+    return `${prop.name}="sample"`;
+  }
+  if (type.includes('number')) {
+    return `${prop.name}={42}`;
+  }
+  if (type.includes('boolean')) {
+    return `${prop.name}={true}`;
+  }
+  if (type.includes('=>') || type.includes('function')) {
+    return `${prop.name}={() => {}}`;
+  }
+  return `${prop.name}={/* TODO */}`;
 }
