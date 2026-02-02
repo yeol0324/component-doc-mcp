@@ -7,6 +7,8 @@ import {
 
 import { listComponents } from './tools/list_components.js';
 import { loadConfig } from './config.js';
+import { analyzeComponent } from './tools/analyze_component.js';
+import { toolHandlers } from './tools/index.js';
 
 const PROJECT_ROOT =
   process.argv[2] || process.env.PROJECT_ROOT || process.cwd();
@@ -30,10 +32,24 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
   tools: [
     {
       name: 'list_components',
-      description: '프로젝트 내 모든 컴포넌트 목록을 가져옵니다.',
+      description: 'get all components in project',
       inputSchema: {
         type: 'object',
         properties: {},
+      },
+    },
+    {
+      name: 'analyze_component',
+      description: 'analyzed component and create props, explain, example',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          componentName: {
+            type: 'string',
+            description: 'component name for analyze',
+          },
+        },
+        required: ['componentName'],
       },
     },
   ],
@@ -41,27 +57,33 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
 
 // logic for tools
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
-  const { name } = request.params;
-  if (name === 'list_components') {
-    const result = await listComponents(PROJECT_ROOT, config);
+  const { name, arguments: args } = request.params;
+
+  const handler = toolHandlers[name];
+
+  if (!handler) {
+    return {
+      content: [{ type: 'text', text: `unknown tool: ${name}` }],
+      isError: true,
+    };
+  }
+
+  try {
+    const result = await handler(args || {}, PROJECT_ROOT, config);
+    return {
+      content: [{ type: 'text', text: result }],
+    };
+  } catch (error) {
     return {
       content: [
         {
           type: 'text',
-          text: result,
+          text: `Error: ${error instanceof Error ? error.message : String(error)}`,
         },
       ],
+      isError: true,
     };
   }
-
-  return {
-    content: [
-      {
-        type: 'text',
-        text: `알 수 없는 도구: ${name}`,
-      },
-    ],
-  };
 });
 
 // start server
