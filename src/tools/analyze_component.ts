@@ -1,5 +1,7 @@
 import { glob } from 'glob';
 import * as path from 'path';
+import { readFile } from 'fs/promises';
+
 import type { Config } from '../config.js';
 
 export async function analyzeComponent(
@@ -11,7 +13,9 @@ export async function analyzeComponent(
 
   if (!componentPath) return `Component "${componentName}" not found.`;
 
-  return `Component "${componentName}" in "${componentPath}"`;
+  const componentContent = await readFile(componentPath, 'utf-8');
+
+  return `Component "${componentName}" in "${componentPath}"\n${componentContent}`;
 }
 
 async function findComponentFile(
