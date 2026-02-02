@@ -1,9 +1,11 @@
 import { glob } from 'glob';
 import * as path from 'path';
+import type { Config } from '../config.js';
 
-export async function listComponents(projectRoot: string) {
+export async function listComponents(projectRoot: string, config: Config) {
   const files = await glob('**/*.{tsx,jsx}', {
     cwd: projectRoot,
+    // TODO: add config ignore
     ignore: ['**/node_modules/**', '**/dist/**'],
   });
 
@@ -13,9 +15,15 @@ export async function listComponents(projectRoot: string) {
       if (name === 'index') return path.basename(path.dirname(file));
       return name;
     })
-    .filter((name) => /^[A-Z]/.test(name))
+    .filter((name) => {
+      return config.namingConvention.some((convention) => {
+        if (convention === 'pascal') return /^[A-Z]/.test(name);
+        if (convention === 'kebab') return /^[a-z]+(-[a-z]+)+$/.test(name);
+        return false;
+      });
+    })
     .filter((name, i, arr) => arr.indexOf(name) === i)
     .sort();
 
-  return `컴포넌트 목록 (${components.length}개):\n\n${components.map((c) => `- ${c}`).join('\n')}`;
+  return `Components (${components.length}):\n\n${components.map((c) => `- ${c}`).join('\n')}`;
 }

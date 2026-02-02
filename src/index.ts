@@ -6,10 +6,13 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 
 import { listComponents } from './tools/list_components.js';
+import { loadConfig } from './config.js';
 
 const PROJECT_ROOT =
   process.argv[2] || process.env.PROJECT_ROOT || process.cwd();
-// 서버 생성
+const config = loadConfig(PROJECT_ROOT);
+
+// create server
 const server = new Server(
   {
     name: 'component-doc-mcp',
@@ -22,7 +25,7 @@ const server = new Server(
   },
 );
 
-// 도구 목록 정의
+// config list tools
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
   tools: [
     {
@@ -36,11 +39,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
   ],
 }));
 
-// 도구 실행 로직
+// logic for tools
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name } = request.params;
   if (name === 'list_components') {
-    const result = await listComponents(PROJECT_ROOT);
+    const result = await listComponents(PROJECT_ROOT, config);
     return {
       content: [
         {
@@ -61,12 +64,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   };
 });
 
-// 서버 시작
+// start server
 async function main() {
-  // Claude와 서버 사이의 통신 방식, stdio(표준 입출력) 사용
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  //console.log는 MCP 통신용 채널이라서 서버의 디버그 메시지는 error 사용
   console.error('Server running!');
 }
 
