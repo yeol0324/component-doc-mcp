@@ -18,13 +18,22 @@ export async function analyzeComponent(
 ) {
   const componentPath = await findComponentFile(componentName, projectRoot);
 
-  if (!componentPath) return `Component "${componentName}" not found.`;
+  if (!componentPath)
+    throw new Error(`Component "${componentName}" not found.`);
 
   const componentContent = await readFile(componentPath, 'utf-8');
 
   const props = extractProps(componentContent);
 
+  const { description, hasDescription } = extractDescription(componentContent);
   let result = `Component "${componentName}" in "${componentPath}"\n\n`;
+
+  result += 'Description:\n';
+  if (hasDescription) {
+    result += `${description}\n\n`;
+  } else {
+    result += 'No description found. Consider adding JSDoc comments.\n\n';
+  }
 
   if (props.length === 0) {
     result += 'Props: None defined\n';
@@ -136,4 +145,32 @@ function extractProps(componentContent: string): PropInfo[] {
   }
 
   return props;
+}
+
+function extractDescription(componentContent: string): {
+  description: string;
+  hasDescription: boolean;
+} {
+  const jsDocMatch = componentContent.match(
+    /\/\*\*\s*\n([\s\S]*?)\*\/\s*(?:export\s+)?(?:const|function)/,
+  );
+
+  if (jsDocMatch?.[1]) {
+    const rawComment = jsDocMatch[1];
+    const cleanedComment = rawComment
+      .split('\n')
+      .map((line) => line.replace(/^\s*\*\s?/, '').trim())
+      .filter((line) => line.trim())
+      .join('\n');
+
+    return {
+      description: cleanedComment,
+      hasDescription: true,
+    };
+  }
+
+  return {
+    description: 'Component with no description',
+    hasDescription: false,
+  };
 }
