@@ -31,13 +31,54 @@ Components (3):
 
 ---
 
-### analyze_component 🔜
+### analyze_component
 
-Analyzes a component file and auto-generates documentation including props, usage examples, and description.
+Analyzes a specific component file and auto-generates documentation including props, description, and usage examples.
+
+**How it works**
+
+1. Searches for the component file using multiple patterns (`Button.tsx`, `Button/index.tsx`, etc.) with `glob`. Returns an error if not found.
+2. Reads the component file using `fs/promises` for async operations, allowing concurrent file operations.
+3. Parses `interface Props` or `type Props` to extract prop definitions. For external types (e.g., `React.ButtonHTMLAttributes`) or custom type aliases, only the type name is shown. Full type resolution planned for future updates (see TODO).
+4. Parses JSDoc comments above the component function. If no description exists, returns a warning message.
+5. Creates a sample usage with required props only. Sample values are generated based on prop types.
+
+**Output**
+
+````markdown
+Component "Button" in "/project/path/Button.tsx"
+
+Description:
+A clickable button component that triggers user actions.
+
+Props (3):
+
+- variant?: "primary" | "secondary"
+  Visual style variant
+- size?: "sm" | "md" | "lg"
+  Button size
+- onClick: () => void
+  Click event handler
+
+Usage Example:
+
+```tsx
+import { Button } from './Button';
+
+<Button onClick={() => {}}></Button>;
+```
+````
+
+**TODO**
+
+- [ ] Storybook file detection and linking
+- [ ] Full TypeScript type resolution using Compiler API
+  - Resolve external types (e.g., `React.ButtonHTMLAttributes`)
+  - Expand custom type aliases (e.g., `CardMode` → `"default" | "scroll" | "expand"`)
 
 ---
 
-### search_component 🔜
+### search_component
 
 Searches components by name or keyword and returns matching results.
 

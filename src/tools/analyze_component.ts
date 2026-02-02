@@ -191,7 +191,7 @@ function generateUsageExample(
   componentPath: string,
   props: PropInfo[],
 ): string {
-  const importValue = `import { ${componentName} } from './${componentName}';`; // 컴포넌트 태그 생성
+  const importValue = `import { ${componentName} } from './${componentName}';`;
   const componentStartTag = `<${componentName}`;
   let propsValue = '';
   for (const prop of props) {
