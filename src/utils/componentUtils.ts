@@ -1,6 +1,6 @@
 import { glob } from 'glob';
 import * as path from 'path';
-import type { PropInfo } from '../types.js';
+import type { Config, PropInfo } from '../types.js';
 
 export async function findComponentFile(
   componentName: string,
@@ -96,4 +96,46 @@ export function extractProps(componentContent: string): PropInfo[] {
   }
 
   return props;
+}
+
+export function extractCodeSnippet(fileContent: string): string {
+  const returnMatches = [...fileContent.matchAll(/return\s*[\(\s]/g)];
+
+  if (returnMatches.length === 0) {
+    return 'No return statement found';
+  }
+
+  const lastReturn = returnMatches[returnMatches.length - 1];
+  const returnIndex = lastReturn?.index!;
+
+  const afterReturn = fileContent.substring(returnIndex);
+
+  const lines = afterReturn.split('\n').slice(0, 10);
+
+  return lines.join('\n').trim();
+}
+
+export async function findRelatedComponents(
+  componentPath: string,
+  currentComponentName: string,
+  config: Config,
+): Promise<string[]> {
+  const dir = path.dirname(componentPath);
+
+  const files = await glob('*.{tsx,jsx}', {
+    cwd: dir,
+  });
+
+  const components = files
+    .map((file) => path.basename(file, path.extname(file)))
+    .filter((name) => name !== currentComponentName)
+    .filter((name) => {
+      return config.namingConvention.some((convention) => {
+        if (convention === 'pascal') return /^[A-Z]/.test(name);
+        if (convention === 'kebab') return /^[a-z]+(-[a-z]+)+$/.test(name);
+        return false;
+      });
+    });
+
+  return components;
 }

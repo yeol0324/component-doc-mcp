@@ -1,6 +1,11 @@
 import { readFile } from 'fs/promises';
 import type { Config, PropInfo } from '../types.js';
-import { extractProps, findComponentFile } from '../utils/componentUtils.js';
+import {
+  extractCodeSnippet,
+  extractProps,
+  findComponentFile,
+  findRelatedComponents,
+} from '../utils/componentUtils.js';
 
 type DescriptionSuggestion = {
   componentName: string;
@@ -22,12 +27,18 @@ export async function suggestDescription(
   }
   const fileContent = await readFile(componentPath, 'utf-8');
   const props = extractProps(fileContent);
+  const codeSnippet = extractCodeSnippet(fileContent);
+  const relatedComponents = await findRelatedComponents(
+    componentPath,
+    componentName,
+    config,
+  );
 
   const suggestion: DescriptionSuggestion = {
     componentName,
     props,
-    codeSnippet: '', // TODO
-    relatedComponents: [], // TODO
+    codeSnippet,
+    relatedComponents,
     fileContext: componentPath,
   };
   return formatSuggestion(suggestion);
