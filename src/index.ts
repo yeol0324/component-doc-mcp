@@ -52,6 +52,21 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         required: ['componentName'],
       },
     },
+    {
+      name: 'suggest_descriptions',
+      description:
+        'Gather information to help generate JSDoc description for a component',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          componentName: {
+            type: 'string',
+            description: 'component name to suggest description for',
+          },
+        },
+        required: ['componentName'],
+      },
+    },
   ],
 }));
 
