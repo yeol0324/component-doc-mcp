@@ -140,3 +140,9 @@ node dist/index.js /path/to/project
 # Or use environment variable
 PROJECT_ROOT=/path/to/project node dist/index.js
 ```
+
+## Test
+
+```bash
+npx @modelcontextprotocol/inspector node dist/index.js /path/to/project
+```

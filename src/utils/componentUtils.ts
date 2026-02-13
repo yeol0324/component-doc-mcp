@@ -1,5 +1,6 @@
 import { glob } from 'glob';
 import * as path from 'path';
+import type { PropInfo } from '../types.js';
 
 export async function findComponentFile(
   componentName: string,
@@ -25,4 +26,74 @@ export async function findComponentFile(
     }
   }
   return null;
+}
+
+export function extractProps(componentContent: string): PropInfo[] {
+  // TODO: TypeScript Compiler API를 사용
+  // 1. 외부 타입(React.ButtonHTMLAttributes 등)을 완전히 해석하여 모든 props 추출
+  // 2. 커스텀 타입 별칭(type CardMode = ...)을 해석하여 실제 값으로 치환
+  //    예: mode?: CardMode → mode?: "default" | "scroll" | "expand"
+  // 3. 복잡한 제네릭 타입, 유니온 타입, 인터섹션 타입 등 파싱
+  // @typescript-eslint/parser 또는 typescript의 createProgram API 활용
+
+  const props: PropInfo[] = [];
+
+  // type Props = External type (only extension info)
+  const extendsMatch = componentContent.match(
+    /type\s+\w*Props\s*=\s*([^;{]+);/,
+  );
+  if (extendsMatch?.[1]) {
+    const extendsType = extendsMatch[1].trim();
+    props.push({
+      name: '...',
+      type: extendsType,
+      required: false,
+      description: 'Extends all properties from this type',
+    });
+    // only external type extension
+    return props;
+  }
+
+  // find interface Props or type Props pattern
+  const interfaceMatch = componentContent.match(
+    /interface\s+\w*Props\s*{([^}]+)}/s,
+  );
+  const typeMatch = componentContent.match(/type\s+\w*Props\s*=\s*{([^}]+)}/s);
+
+  const propsContent = interfaceMatch?.[1] || typeMatch?.[1];
+  if (!propsContent) return props;
+
+  let currentDescription = '';
+  const lines = propsContent.split('\n');
+
+  for (const line of lines) {
+    const trimmedLine = line.trim();
+
+    // extract JSDoc
+    const descriptionMatch = trimmedLine.match(/\/\*\*\s*(.+?)\s*\*\//);
+    if (descriptionMatch?.[1]) {
+      currentDescription = descriptionMatch[1];
+      continue;
+    }
+
+    // extract props
+    const propMatch = trimmedLine.match(/^(\w+)(\?)?:\s*([^;]+);?/);
+    if (propMatch) {
+      const name = propMatch[1];
+      const optional = propMatch[2];
+      const type = propMatch[3];
+
+      if (name && type) {
+        props.push({
+          name,
+          type: type.trim(),
+          required: !optional,
+          ...(currentDescription && { description: currentDescription }),
+        });
+        currentDescription = '';
+      }
+    }
+  }
+
+  return props;
 }
