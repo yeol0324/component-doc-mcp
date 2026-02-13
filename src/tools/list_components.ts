@@ -1,6 +1,6 @@
 import { glob } from 'glob';
 import * as path from 'path';
-import type { Config } from '../config.js';
+import type { Config } from '../types.js';
 
 export async function listComponents(projectRoot: string, config: Config) {
   const files = await glob('**/*.{tsx,jsx}', {

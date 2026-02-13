@@ -1,9 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-
-export interface Config {
-  namingConvention: string[];
-}
+import type { Config } from './types.js';
 
 const DEFAULTS: Config = {
   namingConvention: ['pascal'],
