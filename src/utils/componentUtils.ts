@@ -2,6 +2,34 @@ import { glob } from 'glob';
 import * as path from 'path';
 import type { Config, PropInfo } from '../types.js';
 
+export async function getAllComponents(
+  projectRoot: string,
+  config: Config,
+): Promise<string[]> {
+  const files = await glob('**/*.{tsx,jsx}', {
+    cwd: projectRoot,
+    ignore: ['**/node_modules/**', '**/dist/**', '**/build/**'],
+  });
+
+  const components = files
+    .map((file) => {
+      const name = path.basename(file, path.extname(file));
+      if (name === 'index') return path.basename(path.dirname(file));
+      return name;
+    })
+    .filter((name) => {
+      return config.namingConvention.some((convention) => {
+        if (convention === 'pascal') return /^[A-Z]/.test(name);
+        if (convention === 'kebab') return /^[a-z]+(-[a-z]+)+$/.test(name);
+        return false;
+      });
+    })
+    .filter((name, i, arr) => arr.indexOf(name) === i)
+    .sort();
+
+  return components;
+}
+
 export async function findComponentFile(
   componentName: string,
   projectRoot: string,
