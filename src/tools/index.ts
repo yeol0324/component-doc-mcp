@@ -2,6 +2,7 @@ import { listComponents } from './list_components.js';
 import { analyzeComponent } from './analyze_component.js';
 import type { Config } from '../types.js';
 import { suggestDescription } from './suggest_description.js';
+import { searchComponent } from './search_component.js';
 
 export type ToolHandler = {
   (args: any, projectRoot: string, config: Config): Promise<string>;
@@ -18,5 +19,9 @@ export const toolHandlers: Record<string, ToolHandler> = {
 
   suggest_descriptions: async (args, projectRoot, config) => {
     return await suggestDescription(args.componentName, projectRoot, config);
+  },
+
+  search_component: async (args, projectRoot, config) => {
+    return await searchComponent(args.query, projectRoot, config);
   },
 };

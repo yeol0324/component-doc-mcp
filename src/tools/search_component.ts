@@ -8,7 +8,14 @@ export async function searchComponent(
 ): Promise<string> {
   const allComponents = await getAllComponents(projectRoot, config);
 
-  // TODO: query와 매칭되는 것만 필터링
-  //  결과 포맷팅
-  return new Promise(() => {});
+  const queryLower = query.toLowerCase();
+  const matches = allComponents.filter((componentName) =>
+    componentName.toLowerCase().includes(queryLower),
+  );
+
+  if (matches.length === 0) {
+    return `No components found matching "${query}"`;
+  }
+
+  return `Found ${matches.length} component(s) matching "${query}":\n\n${matches.map((c) => `- ${c}`).join('\n')}`;
 }

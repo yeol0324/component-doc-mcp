@@ -127,7 +127,35 @@ When a component has no JSDoc description, Claude can call this tool to gather c
 
 ### search_component
 
-Searches components by name or keyword and returns matching results.
+Searches for components by name or keyword and returns matching results.
+
+**How it works**
+
+1. **Gather all components**: Uses the same component discovery logic as `list_components` to find all components in the project.
+2. **Filter by query**: Performs case-insensitive substring matching against component names.
+3. **Return matches**: Lists all components whose names contain the search query.
+
+**Output**
+
+```
+Found 2 component(s) matching "button":
+
+- Button
+- IconButton
+```
+
+Or when no matches found:
+
+```
+No components found matching "modal"
+```
+
+**Use cases**
+
+- Find all components related to a specific feature (e.g., "auth", "form")
+- Locate similarly named components (e.g., "card" → Card, ProductCard, UserCard)
+- Explore available components in unfamiliar codebases
+- Quickly check if a component exists before creating a new one
 
 ---
 

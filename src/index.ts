@@ -65,6 +65,21 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         required: ['componentName'],
       },
     },
+    {
+      name: 'search_component',
+      description:
+        'Search for components by name or keyword and return matching results',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          query: {
+            type: 'string',
+            description: 'Search query (component name or keyword)',
+          },
+        },
+        required: ['query'],
+      },
+    },
   ],
 }));
 
