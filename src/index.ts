@@ -80,6 +80,21 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         required: ['query'],
       },
     },
+    {
+      name: 'create_storybook',
+      description:
+        'Generate a Storybook file for a component based on its props',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          componentName: {
+            type: 'string',
+            description: 'Component name to create Storybook file for',
+          },
+        },
+        required: ['componentName'],
+      },
+    },
   ],
 }));
 

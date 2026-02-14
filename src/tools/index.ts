@@ -3,6 +3,7 @@ import { analyzeComponent } from './analyze_component.js';
 import type { Config } from '../types.js';
 import { suggestDescription } from './suggest_description.js';
 import { searchComponent } from './search_component.js';
+import { createStorybook } from './create_storybook.js';
 
 export type ToolHandler = {
   (args: any, projectRoot: string, config: Config): Promise<string>;
@@ -23,5 +24,9 @@ export const toolHandlers: Record<string, ToolHandler> = {
 
   search_component: async (args, projectRoot, config) => {
     return await searchComponent(args.query, projectRoot, config);
+  },
+
+  create_storybook: async (args, projectRoot, config) => {
+    return await createStorybook(args.componentName, projectRoot, config);
   },
 };
