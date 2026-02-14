@@ -78,6 +78,53 @@ import { Button } from './Button';
 
 ---
 
+### suggest_description
+
+Gathers contextual information to help Claude generate appropriate JSDoc descriptions for components without documentation.
+
+**How it works**
+
+1. **Find component file**: Locates the component file using the same pattern matching as `analyze_component`.
+2. **Extract props**: Parses prop definitions to understand what inputs the component accepts.
+3. **Extract code snippet**: Captures the component's return statement (first 10 lines) to understand what it renders.
+4. **Find related components**: Searches for other components in the same directory to provide context about the component's purpose and usage patterns.
+5. **Gather file context**: Includes the file path to understand the component's location in the project structure.
+
+**Output**
+
+```
+Component: Button
+Location: /path/to/shared/ui/elements/Button.tsx
+
+Props (3):
+- variant?: "primary" | "secondary"
+- size?: "sm" | "md" | "lg"
+- onClick: () => void
+
+Code snippet:
+return (
+  <button
+    className={`btn btn-${variant}`}
+    onClick={onClick}
+  >
+    {children}
+  </button>
+);
+
+Related components in same directory:
+IconButton, LinkButton
+```
+
+**Usage with Claude**
+
+When a component has no JSDoc description, Claude can call this tool to gather context and suggest appropriate documentation:
+
+1. User: "Add description to Button component"
+2. Claude calls `analyze_component` → detects missing description
+3. Claude calls `suggest_description` → gathers context
+4. Claude suggests JSDoc based on props, code, and related components
+5. User approves, Claude adds the JSDoc to the file
+
 ### search_component
 
 Searches components by name or keyword and returns matching results.

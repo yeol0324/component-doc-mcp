@@ -5,9 +5,7 @@ import {
   CallToolRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 
-import { listComponents } from './tools/list_components.js';
 import { loadConfig } from './config.js';
-import { analyzeComponent } from './tools/analyze_component.js';
 import { toolHandlers } from './tools/index.js';
 
 const PROJECT_ROOT =
