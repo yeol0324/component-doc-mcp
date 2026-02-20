@@ -44,8 +44,10 @@ function generateStorybookContent(
   props: PropInfo[],
 ): string {
   const importPath = `./${path.basename(componentPath, path.extname(componentPath))}`;
-
   const defaultArgs = generateDefaultArgs(props);
+
+  // Variant stories 생성
+  const variantStories = generateVariantStories(props);
 
   return `import type { Meta, StoryObj } from '@storybook/react';
 import { ${componentName} } from '${importPath}';
@@ -61,9 +63,10 @@ type Story = StoryObj<typeof ${componentName}>;
 export const Default: Story = {
   args: ${defaultArgs},
 };
+
+${variantStories}
 `;
 }
-
 function generateDefaultArgs(props: PropInfo[]): string {
   const hasChildren = props.some((p) => p.name === 'children');
 
@@ -103,4 +106,49 @@ function getSampleValue(type: string): string {
     return '() => {}';
   }
   return '{}';
+}
+
+function generateVariantStories(props: PropInfo[]): string {
+  const variantProp = props.find(
+    (p) => p.name === 'variant' || p.name === 'size' || p.name === 'type',
+  );
+
+  if (!variantProp) {
+    return '';
+  }
+
+  const values = parseUnionType(variantProp.type);
+
+  if (values.length === 0) {
+    return '';
+  }
+
+  // 각 값마다 스토리 생성
+  return values
+    .map((value) => {
+      const storyName = capitalize(value);
+
+      return `
+export const ${storyName}: Story = {
+  args: {
+    ${variantProp.name}: '${value}',
+  },
+};`;
+    })
+    .join('\n');
+}
+
+function parseUnionType(type: string): string[] {
+  // "primary" | "secondary" | "danger" → ["primary", "secondary", "danger"]
+  const matches = type.match(/"([^"]+)"/g);
+
+  if (!matches) {
+    return [];
+  }
+
+  return matches.map((m) => m.replace(/"/g, ''));
+}
+
+function capitalize(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }

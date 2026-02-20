@@ -167,7 +167,7 @@ Generates a Storybook file for a component based on its props definition.
 
 1. **Find component file**: Locates the component using the same pattern matching as other tools.
 2. **Extract props**: Parses prop definitions to understand component inputs.
-3. **Generate template**: Creates a Storybook file with meta configuration and default story, including sample values for required props.
+3. **Generate template**: Creates a Storybook file with meta configuration and default story. If the component has variant props (variant, size, or type), automatically generates additional stories for each variant value.
 4. **Save file**: Writes the `.stories.tsx` file in the same directory as the component.
 
 **Output**
@@ -189,6 +189,24 @@ export const Default: Story = {
   args: {
     children: 'Example content',
     onClick: () => {},
+  },
+};
+
+export const Primary: Story = {
+  args: {
+    variant: 'primary',
+  },
+};
+
+export const Secondary: Story = {
+  args: {
+    variant: 'secondary',
+  },
+};
+
+export const Danger: Story = {
+  args: {
+    variant: 'danger',
   },
 };
 ```
