@@ -159,6 +159,51 @@ No components found matching "modal"
 
 ---
 
+### create_storybook
+
+Generates a Storybook file for a component based on its props definition.
+
+**How it works**
+
+1. **Find component file**: Locates the component using the same pattern matching as other tools.
+2. **Extract props**: Parses prop definitions to understand component inputs.
+3. **Generate template**: Creates a Storybook file with meta configuration and default story, including sample values for required props.
+4. **Save file**: Writes the `.stories.tsx` file in the same directory as the component.
+
+**Output**
+
+```typescript
+// Generated Button.stories.tsx
+import type { Meta, StoryObj } from '@storybook/react';
+import { Button } from './Button';
+
+const meta: Meta<typeof Button> = {
+  title: 'Components/Button',
+  component: Button,
+};
+
+export default meta;
+type Story = StoryObj<typeof Button>;
+
+export const Default: Story = {
+  args: {
+    children: 'Example content',
+    onClick: () => {},
+  },
+};
+```
+
+**Generated file location**
+
+Same directory as component: `Button.tsx` → `Button.stories.tsx`
+
+**Use cases**
+
+- Quickly add Storybook documentation to new components
+- Automate initial story setup based on component props
+- Maintain consistent Storybook structure across the project
+- Bootstrap documentation workflow for undocumented components
+
 ## Configuration
 
 Configuration is resolved in the following priority order: **CLI args > config.json > defaults**.
