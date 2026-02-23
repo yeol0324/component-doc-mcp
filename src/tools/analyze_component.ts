@@ -1,6 +1,10 @@
 import { readFile } from 'fs/promises';
 import type { Config } from '../types.js';
-import { extractProps, findComponentFile } from '../utils/componentUtils.js';
+import {
+  extractProps,
+  findComponentFile,
+  findStorybookFile,
+} from '../utils/componentUtils.js';
 
 type PropInfo = {
   name: string;
@@ -31,6 +35,8 @@ export async function analyzeComponent(
     props,
   );
 
+  const storybookPath = await findStorybookFile(componentName, projectRoot);
+
   let result = `Component "${componentName}" in "${componentPath}"\n\n`;
 
   result += 'Description:\n';
@@ -55,6 +61,10 @@ export async function analyzeComponent(
   if (usageExample) {
     result += `\nUsage Example:\n`;
     result += usageExample;
+  }
+
+  if (storybookPath) {
+    result += `\nStorybook: ${storybookPath}\n`;
   }
   return result;
 }

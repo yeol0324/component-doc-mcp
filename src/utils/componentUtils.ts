@@ -167,3 +167,31 @@ export async function findRelatedComponents(
 
   return components;
 }
+
+export async function findStorybookFile(
+  componentName: string,
+  projectRoot: string,
+): Promise<string | null> {
+  const patterns = [
+    `**/${componentName}.stories.tsx`,
+    `**/${componentName}.stories.jsx`,
+    `**/stories/${componentName}.tsx`,
+    `**/__stories__/${componentName}.tsx`,
+  ];
+
+  for (const pattern of patterns) {
+    const files = await glob(pattern, {
+      cwd: projectRoot,
+      ignore: ['**/node_modules/**', '**/dist/**'],
+    });
+
+    if (files.length > 0) {
+      const file = files[0];
+      if (file) {
+        return path.join(projectRoot, file);
+      }
+    }
+  }
+
+  return null;
+}
