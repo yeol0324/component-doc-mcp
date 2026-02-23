@@ -1,25 +1,40 @@
 # component-doc-mcp
 
-MCP server that analyzes React component files and auto-generates documentation including props, usage examples, and Storybook links.
+React 컴포넌트를 분석하고 문서, JSDoc 주석, Storybook 파일을 자동 생성하는 MCP 서버
+
+**사용 기술**: TypeScript, Node.js, Model Context Protocol (MCP)  
+**핵심 역량**: 파일 시스템 처리, TypeScript Compiler API를 활용한 AST 파싱, CLI 도구 개발
 
 ---
 
-## Tools
+## 🎯 프로젝트 개요
+
+AI 어시스턴트가 다음 작업을 수행할 수 있게 합니다.
+
+- React 컴포넌트 **분석** 및 props, 타입, 문서 추출
+- 컴포넌트 구조와 컨텍스트 기반 JSDoc 주석 **생성**
+- variant별 스토리를 포함한 Storybook 파일 자동 **생성**
+- 대규모 코드베이스에서 컴포넌트 **검색** 및 탐색
+
+**실제 사용 예시**: "Button 컴포넌트에 문서 추가해줘"라고 요청 → 코드 분석 후 JSDoc 제안 및 Storybook 파일 생성
+
+---
+
+## 도구 목록
 
 ### list_components
 
-Scans the project and returns a list of all React component files.
+프로젝트 내 모든 React 컴포넌트 파일을 스캔하여 목록을 반환합니다.
 
-**How it works**
+**작동 방식**
 
-1. Uses `glob` to recursively find all `**/*.{tsx,jsx}` files from the project root, excluding `node_modules` and `dist`.
-2. Extracts the file name using `path.basename()`. e.g. `src/components/Button.tsx` → `Button`.
-3. If the file name is `index`, uses the parent directory name instead. e.g. `src/components/Modal/index.tsx` → `Modal`.
-4. Filters component names based on the `namingConvention` config. Supports `pascal` (e.g. `Button`) and `kebab` (e.g. `user-profile`). If multiple conventions are specified, a name matching any one of them passes the filter.
-5. Removes duplicates in case both `Button.tsx` and `Button/index.tsx` exist.
-6. Sorts alphabetically and returns the list.
+1. `glob`을 사용하여 프로젝트 루트에서 `**/*.{tsx,jsx}` 패턴의 파일을 재귀적으로 검색합니다. `node_modules`와 `dist`는 제외됩니다.
+2. `path.basename()`으로 파일 이름을 추출합니다. 예: `src/components/Button.tsx` → `Button`
+3. 파일 이름이 `index`인 경우, 상위 디렉토리 이름을 사용합니다. 예: `src/components/Modal/index.tsx` → `Modal`
+4. `namingConvention` 설정에 따라 컴포넌트 이름을 필터링합니다. `pascal`(예: `Button`)과 `kebab`(예: `user-profile`)을 지원하며, 여러 규칙이 지정된 경우 하나라도 일치하면 통과합니다.
+5. `Button.tsx`와 `Button/index.tsx`가 모두 존재하는 경우 중복을 제거합니다.
 
-**Output**
+**출력 예시**
 
 ```
 Components (3):
@@ -33,32 +48,32 @@ Components (3):
 
 ### analyze_component
 
-Analyzes a specific component file and auto-generates documentation including props, description, and usage examples.
+특정 컴포넌트 파일을 분석하여 props, 설명, 사용 예시를 포함한 문서를 자동 생성합니다.
 
-**How it works**
+**작동 방식**
 
-1. Searches for the component file using multiple patterns (`Button.tsx`, `Button/index.tsx`, etc.) with `glob`. Returns an error if not found.
-2. Reads the component file using `fs/promises` for async operations, allowing concurrent file operations.
-3. Parses `interface Props` or `type Props` to extract prop definitions. For external types (e.g., `React.ButtonHTMLAttributes`) or custom type aliases, only the type name is shown. Full type resolution planned for future updates (see TODO).
-4. Parses JSDoc comments above the component function. If no description exists, returns a warning message.
-5. Creates a sample usage with required props only. Sample values are generated based on prop types.
+1. `glob`을 사용하여 여러 패턴(`Button.tsx`, `Button/index.tsx` 등)으로 컴포넌트 파일을 검색합니다. 찾지 못하면 에러를 반환합니다.
+2. 비동기 작업을 위해 `fs/promises`를 사용하여 컴포넌트 파일을 읽습니다.
+3. TypeScript Compiler API를 사용하여 `type Props` 또는 `interface Props`를 파싱하고 prop 정의를 추출합니다. 같은 파일 내 타입 별칭(예: `type CardMode = "default" | "scroll"`)은 실제 값으로 표시됩니다. 외부 타입(예: `React.ButtonHTMLAttributes`)은 타입 이름만 표시됩니다.
+4. 컴포넌트 함수 위의 JSDoc 주석을 파싱합니다.
+5. 필수 props만 사용하여 샘플 사용 예시를 생성합니다. 샘플 값은 prop 타입에 따라 생성됩니다.
 
-**Output**
+**출력 예시**
 
 ````markdown
 Component "Button" in "/project/path/Button.tsx"
 
 Description:
-A clickable button component that triggers user actions.
+사용자 액션을 트리거하는 클릭 가능한 버튼 컴포넌트
 
 Props (3):
 
 - variant?: "primary" | "secondary"
-  Visual style variant
+  버튼의 시각적 스타일
 - size?: "sm" | "md" | "lg"
-  Button size
+  버튼 크기
 - onClick: () => void
-  Click event handler
+  클릭 이벤트 핸들러
 
 Usage Example:
 
@@ -69,28 +84,21 @@ import { Button } from './Button';
 ```
 ````
 
-**TODO**
-
-- [ ] Storybook file detection and linking
-- [ ] Full TypeScript type resolution using Compiler API
-  - Resolve external types (e.g., `React.ButtonHTMLAttributes`)
-  - Expand custom type aliases (e.g., `CardMode` → `"default" | "scroll" | "expand"`)
-
 ---
 
 ### suggest_description
 
-Gathers contextual information to help Claude generate appropriate JSDoc descriptions for components without documentation.
+문서가 없는 컴포넌트에 대해 적절한 JSDoc 설명을 생성하기 위한 컨텍스트 정보를 수집합니다.
 
-**How it works**
+**작동 방식**
 
-1. **Find component file**: Locates the component file using the same pattern matching as `analyze_component`.
-2. **Extract props**: Parses prop definitions to understand what inputs the component accepts.
-3. **Extract code snippet**: Captures the component's return statement (first 10 lines) to understand what it renders.
-4. **Find related components**: Searches for other components in the same directory to provide context about the component's purpose and usage patterns.
-5. **Gather file context**: Includes the file path to understand the component's location in the project structure.
+1. **컴포넌트 파일 찾기**: `analyze_component`와 동일한 패턴 매칭으로 컴포넌트 파일을 찾습니다.
+2. **Props 추출**: prop 정의를 파싱하여 컴포넌트가 받는 props를 확인합니다.
+3. **코드 스니펫 추출**: 컴포넌트의 return 문(처음 10줄)을 캡처하여 무엇을 렌더링하는지 파악합니다.
+4. **관련 컴포넌트 찾기**: 같은 디렉토리의 다른 컴포넌트를 검색하여 컴포넌트의 목적과 사용 패턴에 대한 컨텍스트를 제공합니다.
+5. **파일 컨텍스트 수집**: 파일 경로를 포함하여 프로젝트 구조 내 컴포넌트 위치를 파악합니다.
 
-**Output**
+**출력 예시**
 
 ```
 Component: Button
@@ -104,7 +112,7 @@ Props (3):
 Code snippet:
 return (
   <button
-    className={`btn btn-${variant}`}
+    className={`btn-${variant}`}
     onClick={onClick}
   >
     {children}
@@ -115,27 +123,19 @@ Related components in same directory:
 IconButton, LinkButton
 ```
 
-**Usage with Claude**
-
-When a component has no JSDoc description, Claude can call this tool to gather context and suggest appropriate documentation:
-
-1. User: "Add description to Button component"
-2. Claude calls `analyze_component` → detects missing description
-3. Claude calls `suggest_description` → gathers context
-4. Claude suggests JSDoc based on props, code, and related components
-5. User approves, Claude adds the JSDoc to the file
+---
 
 ### search_component
 
-Searches for components by name or keyword and returns matching results.
+이름이나 키워드로 컴포넌트를 검색하여 일치하는 결과를 반환합니다.
 
-**How it works**
+**작동 방식**
 
-1. **Gather all components**: Uses the same component discovery logic as `list_components` to find all components in the project.
-2. **Filter by query**: Performs case-insensitive substring matching against component names.
-3. **Return matches**: Lists all components whose names contain the search query.
+1. **모든 컴포넌트 수집**: `list_components`와 동일한 컴포넌트 탐색을 사용하여 프로젝트의 모든 컴포넌트를 찾습니다.
+2. **쿼리로 필터링**: 컴포넌트 이름에 대해 대소문자 구분 없는 부분 문자열 매칭을 수행합니다.
+3. **일치 항목 반환**: 검색 쿼리가 포함된 모든 컴포넌트를 나열합니다.
 
-**Output**
+**출력 예시**
 
 ```
 Found 2 component(s) matching "button":
@@ -144,97 +144,99 @@ Found 2 component(s) matching "button":
 - IconButton
 ```
 
-Or when no matches found:
+**사용 사례**
 
-```
-No components found matching "modal"
-```
-
-**Use cases**
-
-- Find all components related to a specific feature (e.g., "auth", "form")
-- Locate similarly named components (e.g., "card" → Card, ProductCard, UserCard)
-- Explore available components in unfamiliar codebases
-- Quickly check if a component exists before creating a new one
+- 특정 기능과 관련된 모든 컴포넌트 찾기 (예: "auth", "form")
+- 비슷한 이름의 컴포넌트 찾기 (예: "card" > Card, ProductCard, UserCard)
+- 익숙하지 않은 코드에서 사용 가능한 컴포넌트 탐색
+- 새 컴포넌트를 만들기 전에 컴포넌트 존재 여부 빠르게 확인
 
 ---
 
 ### create_storybook
 
-Generates a Storybook file for a component based on its props definition.
+컴포넌트의 props 정의를 기반으로 Storybook 파일을 생성합니다.
 
-**How it works**
+**작동 방식**
 
-1. **Find component file**: Locates the component using the same pattern matching as other tools.
-2. **Extract props**: Parses prop definitions to understand component inputs.
-3. **Generate template**: Creates a Storybook file with meta configuration and default story. If the component has variant props (variant, size, or type), automatically generates additional stories for each variant value.
-4. **Save file**: Writes the `.stories.tsx` file in the same directory as the component.
+1. **컴포넌트 파일 찾기**: 다른 도구와 동일한 패턴 매칭으로 컴포넌트를 찾습니다.
+2. **Props 추출**: prop 정의를 파싱하여 컴포넌트 입력을 파악합니다.
+3. **템플릿 생성**: meta 설정과 기본 스토리가 포함된 Storybook 파일을 생성합니다. 컴포넌트에 variant props(variant, size, type)가 있으면 각 variant 값에 대한 추가 스토리를 자동 생성합니다.
+4. **파일 저장**: 컴포넌트와 같은 디렉토리에 `.stories.tsx` 파일을 작성합니다.
 
-**Output**
+---
 
-```typescript
-// Generated Button.stories.tsx
-import type { Meta, StoryObj } from '@storybook/react';
-import { Button } from './Button';
+## 프로젝트 구조
 
-const meta: Meta<typeof Button> = {
-  title: 'Components/Button',
-  component: Button,
-};
-
-export default meta;
-type Story = StoryObj<typeof Button>;
-
-export const Default: Story = {
-  args: {
-    children: 'Example content',
-    onClick: () => {},
-  },
-};
-
-export const Primary: Story = {
-  args: {
-    variant: 'primary',
-  },
-};
-
-export const Secondary: Story = {
-  args: {
-    variant: 'secondary',
-  },
-};
-
-export const Danger: Story = {
-  args: {
-    variant: 'danger',
-  },
-};
+```
+src/
+├── index.ts                    # 서버 설정, 핸들러 등록
+├── config.ts
+├── types.ts
+├── utils/
+│   ├── componentUtils.ts       # 공유 유틸 함수
+│   └── tsParser.ts             # TypeScript 파서
+└── tools/
+    ├── index.ts
+    ├── list_components.ts      # 모든 컴포넌트 나열
+    ├── analyze_component.ts    # 컴포넌트 상세 분석
+    ├── suggest_description.ts  # JSDoc용 컨텍스트 수집
+    ├── search_component.ts     # 키워드로 컴포넌트 검색
+    └── create_storybook.ts     # Storybook 파일 생성
 ```
 
-**Generated file location**
+---
 
-Same directory as component: `Button.tsx` → `Button.stories.tsx`
+## 요구사항
 
-**Use cases**
+- Node.js >= 18.0.0
+- `.tsx` 또는 `.jsx` 컴포넌트가 있는 React/TypeScript 프로젝트
+- (option) `create_storybook` 도구를 위한 Storybook
 
-- Quickly add Storybook documentation to new components
-- Automate initial story setup based on component props
-- Maintain consistent Storybook structure across the project
-- Bootstrap documentation workflow for undocumented components
+---
 
-## Configuration
+## 설치
 
-Configuration is resolved in the following priority order: **CLI args > config.json > defaults**.
+```bash
+npm install
+npm run build
+```
 
-**Defaults**
+---
 
-| Option             | Default      | Description                                                   |
-| ------------------ | ------------ | ------------------------------------------------------------- |
-| `namingConvention` | `["pascal"]` | Naming conventions to include. Supports `pascal` and `kebab`. |
+## 사용법
+
+```json
+{
+  "mcpServers": {
+    "component-doc": {
+      "command": "node",
+      "args": [
+        "/path/to/component-doc-mcp/dist/index.js",
+        "/path/to/your/project"
+      ]
+    }
+  }
+}
+```
+
+### MCP Inspector로 테스트
+
+```bash
+npx @modelcontextprotocol/inspector node dist/index.js /path/to/your/project
+```
+
+### 설정
+
+설정은 **CLI 인자 > config.json > 기본값** 순서입니다.
+
+| 옵션               | 기본값       | 설명                                   |
+| ------------------ | ------------ | -------------------------------------- |
+| `namingConvention` | `["pascal"]` | 포함할 네이밍 규칙. `pascal`과 `kebab` |
 
 **config.json**
 
-Place a `config.json` in your project root:
+`/path/to/your/project` 프로젝트 루트에 `config.json` 파일
 
 ```json
 {
@@ -242,45 +244,48 @@ Place a `config.json` in your project root:
 }
 ```
 
-**CLI override**
+**CLI**
 
 ```bash
 node dist/index.js /path/to/project --naming-convention pascal,kebab
 ```
 
+또는
+
+````json
+```json
+{
+  "mcpServers": {
+    "component-doc": {
+      "command": "node",
+      "args": [
+        "/path/to/component-doc-mcp/dist/index.js",
+        "/path/to/your/project",
+        "--naming-convention",
+        "pascal,kebab"
+      ]
+    }
+  }
+}
+````
+
 ---
 
-## Project Structure
+## 사용 예시
 
 ```
-src/
-├── index.ts              # Server setup, handler registration, and startup
-├── config.ts             # Configuration loading and merging (CLI, config.json, defaults)
-└── tools/
-    └── list_components.ts  # list_components logic
-```
+사용자: "프로젝트의 모든 컴포넌트 보여줘"
+→ Claude가 list_components 호출
 
----
+사용자: "Button 컴포넌트 어떻게 써?"
+→ Claude가 analyze_component 호출
 
-## Installation
+사용자: "Card 컴포넌트에 JSDoc 설명 추가해줘"
+→ Claude가 suggest_description 호출
+→ Claude가 props와 코드 기반으로 설명 제안
+→ 사용자 승인 후 Claude가 파일에 JSDoc 추가
 
-```bash
-npm install
-npm run build
-```
-
-## Usage
-
-```bash
-# Pass project path as argument
-node dist/index.js /path/to/project
-
-# Or use environment variable
-PROJECT_ROOT=/path/to/project node dist/index.js
-```
-
-## Test
-
-```bash
-npx @modelcontextprotocol/inspector node dist/index.js /path/to/project
+사용자: "Modal에 Storybook 파일 만들어줘"
+→ Claude가 create_storybook 호출
+→ variant 스토리가 포함된 Modal.stories.tsx 생성
 ```

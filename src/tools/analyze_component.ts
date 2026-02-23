@@ -1,10 +1,10 @@
 import { readFile } from 'fs/promises';
 import type { Config } from '../types.js';
 import {
-  extractProps,
   findComponentFile,
   findStorybookFile,
 } from '../utils/componentUtils.js';
+import { extractProps } from '../utils/tsParser.js';
 
 type PropInfo = {
   name: string;

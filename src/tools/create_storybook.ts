@@ -1,7 +1,8 @@
 import type { Config, PropInfo } from '../types.js';
-import { findComponentFile, extractProps } from '../utils/componentUtils.js';
 import { readFile, writeFile } from 'fs/promises';
 import * as path from 'path';
+import { findComponentFile } from '../utils/componentUtils.js';
+import { extractProps } from '../utils/tsParser.js';
 
 export async function createStorybook(
   componentName: string,

@@ -2,10 +2,10 @@ import { readFile } from 'fs/promises';
 import type { Config, PropInfo } from '../types.js';
 import {
   extractCodeSnippet,
-  extractProps,
   findComponentFile,
   findRelatedComponents,
 } from '../utils/componentUtils.js';
+import { extractProps } from '../utils/tsParser.js';
 
 type DescriptionSuggestion = {
   componentName: string;

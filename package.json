@@ -1,25 +1,43 @@
 {
   "name": "component-doc-mcp",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "MCP server that analyzes React component files and auto-generates documentation including props, usage examples, and Storybook links",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "component-doc-mcp": "dist/index.js"
+  },
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "test:dev": "npm run build && node dist/test.js"
+    "prepublishOnly": "npm run build"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/yeol0324/component-doc-mcp.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "react",
+    "component",
+    "documentation",
+    "storybook",
+    "typescript",
+    "props",
+    "jsdoc"
+  ],
+  "author": "yeol0324",
   "license": "ISC",
-  "type": "module",
   "bugs": {
     "url": "https://github.com/yeol0324/component-doc-mcp/issues"
   },
   "homepage": "https://github.com/yeol0324/component-doc-mcp#readme",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.25.3",
     "glob": "^13.0.0"
@@ -28,5 +46,8 @@
     "@types/glob": "^8.1.0",
     "@types/node": "^25.1.0",
     "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
